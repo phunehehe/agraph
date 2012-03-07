@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+    <head>
+        <title>agraph</title>
+        <script src='g.raphael/raphael-min.js'></script>
+        <script src='g.raphael/g.raphael.js'></script>
+        <script src='g.raphael/g.line.js'></script>
+        <script src='data.js'></script>
+        <script>
+            window.onload = function () {
+                var r = Raphael(0, 0, 800, 480);
+                r.linechart(0, 0, 800, 480, data.timestamps, data.reads);
+                r.linechart(0, 0, 800, 480, data.timestamps, data.writes);
+            };
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
