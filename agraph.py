@@ -5,14 +5,13 @@ from subprocess import PIPE
 import json
 
 
-timestamps = []
-reads = []
-writes = []
+log_file = Popen(['atop', '-PDSK', '-r', '/var/log/atop.log.1'], stdout=PIPE).stdout
 
-output = Popen(['atop', '-PDSK', '-r', '/var/log/atop.log.1'], stdout=PIPE).stdout
+
+data = []
 skip_first = True
 
-for line in output:
+for line in log_file:
     line = line.strip()
     if line in ('SEP', 'RESET'):
         continue
@@ -21,16 +20,8 @@ for line in output:
         skip_first = False
         continue
     tokens = line.split(' ')
-    label, host, timestamp_str, _, _, interval, device, milliseconds, read, sectors_read, write, sectors_written = tokens
-    timestamp = int(timestamp_str)
-    timestamps.append(timestamp)
-    reads.append(int(read))
-    writes.append(int(write))
-
+    label, host, timestamp, _, _, interval, device, milliseconds, read, sectors_read, write, sectors_written = tokens
+    data.append((int(timestamp), int(read), int(write)))
 
 f = open('data.js', 'w')
-f.write('data = ' + json.dumps({
-    'timestamps': timestamps,
-    'reads': reads,
-    'writes': writes,
-}))
+f.write('data = ' + json.dumps(data))
