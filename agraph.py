@@ -2,6 +2,7 @@
 
 from subprocess import Popen
 from subprocess import PIPE
+from datetime import datetime
 import json
 
 
@@ -21,7 +22,11 @@ for line in log_file:
 
     if device not in data:
         data[device] = []
-    data[device].append((int(timestamp), int(read), int(write)))
+    data[device].append((
+        int(timestamp),
+        int(read),
+        int(write),
+    ))
 
 
 f = open('html/data.js', 'w')
