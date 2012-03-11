@@ -1,4 +1,4 @@
-window.onload = function () {
+$(document).ready(function() {
 
     var body = $('body');
 
@@ -30,28 +30,35 @@ window.onload = function () {
             axesDefaults: {
                 pad: 0,
                 tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                tickOptions:{
+                tickOptions: {
                     angle: -30,
                 },
             },
             axes: {
-                xaxis: {renderer: $.jqplot.DateAxisRenderer},
+                xaxis: {
+                    renderer: $.jqplot.DateAxisRenderer,
+                },
+            },
+            cursor: {
+                show: true,
+                zoom: true,
+                looseZoom: true,
+            },
+            highlighter: {
+                show: true,
             },
             legend: {
                 show: true,
+                labels: ['Reads', 'Writes'],
             },
             seriesDefaults: {
-                showMarker: false,
+                showMarker: true,
                 fill: true,
                 fillAndStroke: true,
                 fillAlpha: 0.5,
             },
-            series:[
-                {label: 'Reads'},
-                {label: 'Writes'},
-            ],
             stackSeries: true,
-            title: 'Disk Utilization for ' + device,
+            title: 'Disk utilization for ' + device,
         });
     }
-};
+});
