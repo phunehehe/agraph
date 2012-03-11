@@ -24,5 +24,5 @@ for line in log_file:
     data[device].append((int(timestamp), int(read), int(write)))
 
 
-f = open('data.js', 'w')
+f = open('html/data.js', 'w')
 f.write('data = ' + json.dumps(data))
