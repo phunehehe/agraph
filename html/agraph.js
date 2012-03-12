@@ -1,64 +1,53 @@
+Date.prototype.format = function(formatString) {
+    var hour = this.getHours();
+    var minute = this.getMinutes();
+    return formatString.replace('%H', hour).replace('%M', minute);
+}
+
+
+var dataToSeries = function(data) {
+
+    var reads = [];
+    var writes = [];
+
+    // Start with 1 to skip first entry with accumulated readings
+    for (var i = 1, j = data.length; i < j; i++) {
+        var tuple = data[i];
+        var date = new Date(tuple[0] * 1000);
+        reads.push([date, tuple[1]]);
+        writes.push([date, tuple[2]]);
+    }
+
+    return [reads, writes];
+}
+
+
 $(document).ready(function() {
 
     var body = $('body');
 
-    var data_to_series = function(data) {
-
-        var reads = [];
-        var writes = [];
-
-        // Start with 1 to skip first entry with accumulated readings
-        for (var i = 1, j = data.length; i < j; i++) {
-            var tuple = data[i];
-            var date = tuple[0] * 1000;
-            reads.push([date, tuple[1]]);
-            writes.push([date, tuple[2]]);
-        }
-
-        return [reads, writes];
-    }
-
     for (device in data) {
 
-        var placeholder = 'jqplot-' + device;
+        var placeholder = 'dsk-' + device;
 
         $('<div/>', {
             'id': placeholder,
+            'style': 'height: 300px',
         }).appendTo(body);
 
-        $.jqplot(placeholder, data_to_series(data[device]), {
-            axesDefaults: {
-                pad: 0,
-                tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                tickOptions: {
-                    angle: -30,
-                },
-            },
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.DateAxisRenderer,
-                },
-            },
-            cursor: {
-                show: true,
-                zoom: true,
-                looseZoom: true,
-            },
-            highlighter: {
-                show: true,
-            },
-            legend: {
-                show: true,
-                labels: ['Reads', 'Writes'],
-            },
-            seriesDefaults: {
-                showMarker: true,
-                fill: true,
-                fillAndStroke: true,
-                fillAlpha: 0.5,
-            },
-            stackSeries: true,
-            title: 'Disk utilization for ' + device,
-        });
+        var container = $('#' + placeholder)[0];
+        var series = dataToSeries(data[device]);
+
+        var options = {
+            xaxis: {
+                noTicks: 20,
+                tickFormatter: function(millis) {
+                    var date = new Date(parseInt(millis));
+                    return date.format('%H:%M');
+                }
+            }
+        }
+
+        Flotr.draw(container, series, options);
     }
 });
