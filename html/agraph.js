@@ -21,7 +21,7 @@ function dataToSeries(data) {
 }
 
 
-function drawFlotr(container, data) {
+function drawFlotr(container, data, options) {
     var series = dataToSeries(data);
 
     var defaultOptions = {
@@ -34,14 +34,15 @@ function drawFlotr(container, data) {
             }
         }
     }
+    defaultOptions = Flotr._.extend(defaultOptions, options);
 
-    function drawGraph(options) {
+    function drawGraph(extraOptions) {
         // Clone so that 'defaultOptions' is intact
-        options = Flotr._.extend(Flotr._.clone(defaultOptions), options || {});
+        extraOptions = Flotr._.extend(Flotr._.clone(defaultOptions), extraOptions || {});
         return Flotr.draw(
             container,
             series,
-            options
+            extraOptions
         );
     }
 
@@ -76,6 +77,8 @@ $(document).ready(function() {
             'style': 'height: 300px',
         })
         container.appendTo(body);
-        drawFlotr(container[0], data[device]);
+        drawFlotr(container[0], data[device], {
+            title: 'Disk utilization for ' + device
+        });
     }
 });
