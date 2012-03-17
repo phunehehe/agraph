@@ -6,7 +6,6 @@ Date.prototype.format = function(formatString) {
 
 
 function dataToSeries(data) {
-
     var reads = [];
     var writes = [];
 
@@ -22,62 +21,61 @@ function dataToSeries(data) {
 }
 
 
-$(document).ready(function() {
+function drawFlotr(container, data) {
+    var series = dataToSeries(data);
 
-    var body = $('body');
-
-    for (device in data) {
-
-        var placeholder = 'dsk-' + device;
-
-        $('<div/>', {
-            'id': placeholder,
-            'style': 'height: 300px',
-        }).appendTo(body);
-
-        var container = $('#' + placeholder)[0];
-        var series = dataToSeries(data[device]);
-
-        var options = {
-            selection : { mode : 'x' },
-            xaxis: {
-                noTicks: 20,
-                tickFormatter: function(millis) {
-                    var date = new Date(parseInt(millis));
-                    return date.format('%H:%M');
-                }
+    var defaultOptions = {
+        selection : { mode : 'x' },
+        xaxis: {
+            noTicks: 20,
+            tickFormatter: function(millis) {
+                var date = new Date(parseInt(millis));
+                return date.format('%H:%M');
             }
         }
+    }
 
-        function drawGraph(opts) {
-            // Clone the options, so the 'options' variable always keeps intact.
-            var o = Flotr._.extend(Flotr._.clone(options), opts || {});
-            return Flotr.draw(
-                container,
-                series,
-                o
-            );
-        }
+    function drawGraph(options) {
+        // Clone so that 'defaultOptions' is intact
+        options = Flotr._.extend(Flotr._.clone(defaultOptions), options || {});
+        return Flotr.draw(
+            container,
+            series,
+            options
+        );
+    }
 
-        drawGraph();
-
-        Flotr.EventAdapter.observe(container, 'flotr:select', function(area) {
-            // Draw graph with new area
-            f = drawGraph({
-                xaxis: {
-                    min: area.x1,
-                    max: area.x2
-                },
-                yaxis: {
-                    min: area.y1,
-                    max: area.y2
-                }
-            });
+    Flotr.EventAdapter.observe(container, 'flotr:select', function(area) {
+        // Draw graph with new area
+        drawGraph({
+            xaxis: {
+                min: area.x1,
+                max: area.x2
+            },
+            yaxis: {
+                min: area.y1,
+                max: area.y2
+            }
         });
+    });
 
-        // When graph is clicked, draw the graph with default area.
-        Flotr.EventAdapter.observe(container, 'flotr:click', function() { drawGraph(); });
+    // When graph is clicked, draw the graph with default area.
+    Flotr.EventAdapter.observe(container, 'flotr:click', function() {
+        drawGraph();
+    });
 
-        break;
+    drawGraph();
+}
+
+
+$(document).ready(function() {
+    var body = $('body');
+    for (device in data) {
+        var container = $('<div/>', {
+            'id': 'dsk-' + device,
+            'style': 'height: 300px',
+        })
+        container.appendTo(body);
+        drawFlotr(container[0], data[device]);
     }
 });
