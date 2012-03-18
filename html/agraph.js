@@ -17,17 +17,30 @@ function dataToSeries(data) {
         writes.push([date, tuple[4]]);
     }
 
-    data = [
+    return [
         { data : reads, label : 'Reads' },
         { data : writes, label : 'Writes' },
     ];
-    return data;
 }
 
 
-function drawFlotr(container, data, options) {
-    var series = dataToSeries(data);
+function millisSeries(data) {
+    var allSeries = [];
+    for (device in data) {
+        var deviceData = data[device];
+        var seriesData = []
+        for (var i = 1, j = deviceData.length; i < j; i++) {
+            var tuple = deviceData[i];
+            var date = new Date(tuple[0] * 1000);
+            seriesData.push([date, tuple[1]]);
+        }
+        allSeries.push({ data: seriesData, label: device });
+    }
+    return allSeries;
+}
 
+
+function drawFlotr(container, series, options) {
     var defaultOptions = {
         selection : { mode : 'x' },
         xaxis: {
@@ -75,14 +88,24 @@ function drawFlotr(container, data, options) {
 
 $(document).ready(function() {
     var body = $('body');
+    var container = $('<div/>', {
+        'id': 'dsk',
+        'class': 'graph',
+    })
+    container.appendTo(body);
+    var series = millisSeries(data);
+    drawFlotr(container[0], series, {
+        title: 'Time spent on I/O'
+    });
     for (device in data) {
         var container = $('<div/>', {
             'id': 'dsk-' + device,
             'class': 'graph',
         })
         container.appendTo(body);
-        drawFlotr(container[0], data[device], {
-            title: 'Disk utilization for ' + device
+        var series = dataToSeries(data[device]);
+        drawFlotr(container[0], series, {
+            title: 'Number of reads/writes for ' + device
         });
     }
 });
