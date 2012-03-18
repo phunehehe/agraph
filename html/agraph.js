@@ -13,11 +13,15 @@ function dataToSeries(data) {
     for (var i = 1, j = data.length; i < j; i++) {
         var tuple = data[i];
         var date = new Date(tuple[0] * 1000);
-        reads.push([date, tuple[1]]);
-        writes.push([date, tuple[2]]);
+        reads.push([date, tuple[2]]);
+        writes.push([date, tuple[4]]);
     }
 
-    return [reads, writes];
+    data = [
+        { data : reads, label : 'Reads' },
+        { data : writes, label : 'Writes' },
+    ];
+    return data;
 }
 
 
@@ -74,7 +78,7 @@ $(document).ready(function() {
     for (device in data) {
         var container = $('<div/>', {
             'id': 'dsk-' + device,
-            'style': 'height: 300px',
+            'class': 'graph',
         })
         container.appendTo(body);
         drawFlotr(container[0], data[device], {
