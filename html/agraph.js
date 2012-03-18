@@ -5,7 +5,23 @@ Date.prototype.format = function(formatString) {
 }
 
 
-function dataToSeries(data) {
+function ioTimeSeries(data) {
+    var allSeries = [];
+    for (device in data) {
+        var deviceData = data[device];
+        var seriesData = []
+        for (var i = 1, j = deviceData.length; i < j; i++) {
+            var tuple = deviceData[i];
+            var date = new Date(tuple[0] * 1000);
+            seriesData.push([date, tuple[1]]);
+        }
+        allSeries.push({ data: seriesData, label: device });
+    }
+    return allSeries;
+}
+
+
+function readsWritesSeries(data) {
     var reads = [];
     var writes = [];
 
@@ -24,19 +40,22 @@ function dataToSeries(data) {
 }
 
 
-function millisSeries(data) {
-    var allSeries = [];
-    for (device in data) {
-        var deviceData = data[device];
-        var seriesData = []
-        for (var i = 1, j = deviceData.length; i < j; i++) {
-            var tuple = deviceData[i];
-            var date = new Date(tuple[0] * 1000);
-            seriesData.push([date, tuple[1]]);
-        }
-        allSeries.push({ data: seriesData, label: device });
+function sectorsSeries(data) {
+    var read = [];
+    var written = [];
+
+    // Start with 1 to skip first entry with accumulated readings
+    for (var i = 1, j = data.length; i < j; i++) {
+        var tuple = data[i];
+        var date = new Date(tuple[0] * 1000);
+        read.push([date, tuple[3]]);
+        written.push([date, tuple[5]]);
     }
-    return allSeries;
+
+    return [
+        { data : read, label : 'Read' },
+        { data : written, label : 'Written' }
+    ];
 }
 
 
@@ -96,15 +115,20 @@ $(document).ready(function() {
 
     drawFlotr(
         makeContainer({ 'id': 'dsk', 'class': 'graph' }),
-        millisSeries(data),
+        ioTimeSeries(data),
         { title: 'Time spent on I/O' }
     );
 
     for (device in data) {
         drawFlotr(
-            makeContainer({ 'id': 'dsk-' + device, 'class': 'graph' }),
-            dataToSeries(data[device]),
-            { title: 'Number of reads/writes for ' + device }
+            makeContainer({ 'id': 'dsk-drw' + device, 'class': 'graph' }),
+            readsWritesSeries(data[device]),
+            { title: 'Disk reads/writes - ' + device }
+        );
+        drawFlotr(
+            makeContainer({ 'id': 'dsk-srw' + device, 'class': 'graph' }),
+            sectorsSeries(data[device]),
+            { title: 'Sectors read/written - ' + device }
         );
     }
 });
