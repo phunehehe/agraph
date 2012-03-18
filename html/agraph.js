@@ -88,24 +88,23 @@ function drawFlotr(container, series, options) {
 
 $(document).ready(function() {
     var body = $('body');
-    var container = $('<div/>', {
-        'id': 'dsk',
-        'class': 'graph',
-    })
-    container.appendTo(body);
-    var series = millisSeries(data);
-    drawFlotr(container[0], series, {
-        title: 'Time spent on I/O'
-    });
-    for (device in data) {
-        var container = $('<div/>', {
-            'id': 'dsk-' + device,
-            'class': 'graph',
-        })
+    function makeContainer(options) {
+        var container = $('<div/>', options);
         container.appendTo(body);
-        var series = dataToSeries(data[device]);
-        drawFlotr(container[0], series, {
-            title: 'Number of reads/writes for ' + device
-        });
+        return container[0];
+    }
+
+    drawFlotr(
+        makeContainer({ 'id': 'dsk', 'class': 'graph' }),
+        millisSeries(data),
+        { title: 'Time spent on I/O' }
+    );
+
+    for (device in data) {
+        drawFlotr(
+            makeContainer({ 'id': 'dsk-' + device, 'class': 'graph' }),
+            dataToSeries(data[device]),
+            { title: 'Number of reads/writes for ' + device }
+        );
     }
 });
