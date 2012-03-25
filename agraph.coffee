@@ -75,27 +75,18 @@ drawFlotr = (container, series, options) ->
     }
     defaultOptions = Flotr._.extend(defaultOptions, options)
 
-    drawGraph = (extraOptions) ->
-        # Clone so that 'defaultOptions' is intact
-        extraOptions = Flotr._.extend(Flotr._.clone(defaultOptions), extraOptions || {})
+    drawGraph = (options=defaultOptions) ->
         return Flotr.draw(
             container,
             series,
-            extraOptions,
+            options,
         )
 
     Flotr.EventAdapter.observe(container, 'flotr:select', (area) ->
-        # Draw graph with new area
-        drawGraph({
-            xaxis: {
-                min: area.x1,
-                max: area.x2,
-            },
-            yaxis: {
-                min: area.y1,
-                max: area.y2,
-            },
-        })
+        newOptions = $.extend(true, defaultOptions)
+        newOptions.xaxis.min = area.x1
+        newOptions.xaxis.max = area.x2
+        drawGraph(newOptions)
     )
 
     # When graph is clicked, draw the graph with default area.
