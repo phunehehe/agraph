@@ -104,28 +104,34 @@ drawFlotr = (container, series, options) ->
     drawGraph()
 
 
-makeContainer = (options) ->
-    container = $('<div/>', options)
-    container.appendTo($('body'))
-    return container[0]
+makeContainer = (id, extraClass, newRow=true) ->
+    container = $('#graph-container')
+    if newRow
+        row = $('<div/>', {'class': 'row'})
+    else
+        row = container.find('.row:last')
+    graph = $('<div/>', {id: id, class: 'graph ' + extraClass})
+    graph.appendTo(row)
+    row.appendTo(container)
+    return graph[0]
 
 
 $(document).ready ->
 
     drawFlotr(
-        makeContainer({'id': 'dsk', 'class': 'graph span12'}),
+        makeContainer('dsk', 'span12'),
         ioTimeSeries(data),
         {title: 'Time spent on I/O'}
     )
 
     for device, deviceData of data
         drawFlotr(
-            makeContainer({'id': 'dsk-drw' + device, 'class': 'graph span6'}),
+            makeContainer('dsk-rw' + device, 'span6'),
             readsWritesSeries(deviceData),
             {title: 'Disk reads/writes - ' + device}
         )
         drawFlotr(
-            makeContainer({'id': 'dsk-srw' + device, 'class': 'graph span6'}),
+            makeContainer('dsk-srw' + device, 'span6', false),
             sectorsSeries(deviceData),
             {title: 'Sectors read/written - ' + device}
         )

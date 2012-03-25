@@ -3,16 +3,37 @@
     <head>
         <title>agraph</title>
 
-        <script type='text/javascript' src='jquery.js'></script>
-        <script type='text/javascript' src='flotr2.js'></script>
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="flotr2.js"></script>
 
-        <link href='bootstrap.css' rel='stylesheet'>
-        <link href='bootstrap-responsive.css' rel='stylesheet'>
+        <link href="bootstrap.css" rel="stylesheet">
+        <link href="bootstrap-responsive.css" rel="stylesheet">
 
-        <link rel='stylesheet' type='text/css' href='agraph.css' />
-        <script type='text/javascript' src='agraph.js'></script>
-        <script type='text/javascript' src='../data/data.js'></script>
+        <link rel="stylesheet" type="text/css" href="agraph.css" />
+        <script type="text/javascript" src="agraph.js"></script>
+        <script type="text/javascript" src="../data/data.js"></script>
     </head>
     <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+                    <a class="brand" href="#">Project name</a>
+                    <div class="nav-collapse">
+                        <ul class="nav">
+                            <li class="active"><a href="#">Home</a></li>
+                            <li><a href="#about">About</a></li>
+                            <li><a href="#contact">Contact</a></li>
+                        </ul>
+                    </div><!--/.nav-collapse -->
+                </div>
+            </div>
+        </div>
+        <div id="graph-container" class="container">
+        </div>
     </body>
 </html>
