@@ -4,6 +4,10 @@ Date::format = (formatString) ->
     return formatString.replace('%H', hours).replace('%M', minutes)
 
 
+String::repeat = (times) ->
+    return new Array(times + 1).join(this)
+
+
 class Snapshot
     constructor: (@tuple) ->
     timestamp: ->
@@ -71,6 +75,13 @@ drawFlotr = (container, series, options) ->
             tickFormatter: (millis) ->
                 date = new Date(parseInt(millis))
                 return date.format('%H:%M')
+        },
+        yaxis: {
+            tickFormatter: (valStr) ->
+                val = parseFloat(valStr)
+                if val == 0
+                    return '&nbsp;'.repeat(10) + '0'
+                return valStr
         }
     }
     defaultOptions = Flotr._.extend(defaultOptions, options)
@@ -108,7 +119,6 @@ makeContainer = (id, extraClass, newRow=true) ->
 
 
 $(document).ready ->
-
     drawFlotr(
         makeContainer('dsk', 'span12'),
         ioTimeSeries(data),
