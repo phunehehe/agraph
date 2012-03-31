@@ -85,7 +85,7 @@ drawFlotr = (container, series, options) ->
             tickFormatter: (valStr) ->
                 val = parseFloat(valStr)
                 if val == 0
-                    return '&nbsp;'.repeat(10) + '0'
+                    return '&nbsp;'.repeat(12) + '0'
                 return valStr
         }
     }
@@ -123,30 +123,56 @@ makeContainer = (id, extraClass, newRow=true) ->
     return graph[0]
 
 
-dataReady = (data) ->
+diskDataReady = (data) ->
     drawFlotr(
-        makeContainer('dsk', 'span12'),
+        makeContainer('disk', 'span12'),
         ioTimeSeries(data),
         {title: 'Time spent on I/O'}
     )
 
     for device, deviceData of data
         drawFlotr(
-            makeContainer('dsk-rw' + device, 'span6'),
+            makeContainer('disk-rw' + device, 'span6'),
             readsWritesSeries(deviceData),
             {title: 'Disk reads/writes - ' + device}
         )
         drawFlotr(
-            makeContainer('dsk-srw' + device, 'span6', false),
+            makeContainer('disk-srw' + device, 'span6', false),
             sectorsSeries(deviceData),
             {title: 'Sectors read/written - ' + device}
         )
+
+
+memorySeries = (data) ->
+    extract = (tuple) ->
+        snapshot = new Snapshot tuple
+        return [snapshot.timestamp(), snapshot.ioTime()]
+    return {
+        # Start with 1 to skip first entry with accumulated readings
+        data: (extract(tuple) for tuple in deviceData[1..]),
+        label: device
+    } for device, deviceData of data
+
+
+memoryDataReady = (data) ->
+    console.log(data)
+    drawFlotr(
+        makeContainer('memory', 'span12'),
+        memorySeries(data),
+        {title: 'Memory usage'}
+    )
 
 
 tab = paramByName('tab')
 if tab
     $('.nav li').removeClass('active')
     $("a[href*='?tab=#{tab}']").parent().addClass('active')
+
+    dataReady = {
+        'memory': memoryDataReady,
+        'disk': diskDataReady,
+    }[tab]
     $.getJSON("data/#{tab}.js", dataReady)
+
 else
     console.log('there was nothing')
