@@ -143,4 +143,10 @@ dataReady = (data) ->
         )
 
 
-$.getJSON('data/disk.js', dataReady)
+tab = paramByName('tab')
+if tab
+    $('.nav li').removeClass('active')
+    $("a[href*='?tab=#{tab}']").parent().addClass('active')
+    $.getJSON("data/#{tab}.js", dataReady)
+else
+    console.log('there was nothing')
