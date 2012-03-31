@@ -12,6 +12,20 @@ class Snapshot
     constructor: (@tuple) ->
     timestamp: ->
         return new Date(this.tuple[0] * 1000)
+
+    # Memory
+    usedPages: ->
+        return this.tuple[1]
+    cachePages: ->
+        return this.tuple[2]
+    bufferPages: ->
+        return this.tuple[3]
+    slabPages: ->
+        return this.tuple[4]
+    freePages: ->
+        return this.tuple[5]
+
+    # Disk
     ioTime: ->
         return this.tuple[1]
     reads: ->
@@ -31,7 +45,7 @@ paramByName = (name) ->
 
 ioTimeSeries = (data) ->
     extract = (tuple) ->
-        snapshot = new Snapshot tuple
+        snapshot = new Snapshot(tuple)
         return [snapshot.timestamp(), snapshot.ioTime()]
     return {
         # Start with 1 to skip first entry with accumulated readings
@@ -46,7 +60,7 @@ readsWritesSeries = (data) ->
 
     # Start with 1 to skip first entry with accumulated readings
     for tuple in data[1..]
-        snapshot = new Snapshot tuple
+        snapshot = new Snapshot(tuple)
         reads.push([snapshot.timestamp(), snapshot.reads()])
         writes.push([snapshot.timestamp(), snapshot.writes()])
 
@@ -62,7 +76,7 @@ sectorsSeries = (data) ->
 
     # Start with 1 to skip first entry with accumulated readings
     for tuple in data[1..]
-        snapshot = new Snapshot tuple
+        snapshot = new Snapshot(tuple)
         read.push([snapshot.timestamp(), snapshot.sectorsRead()])
         written.push([snapshot.timestamp(), snapshot.sectorsWritten()])
 
@@ -144,18 +158,28 @@ diskDataReady = (data) ->
 
 
 memorySeries = (data) ->
-    extract = (tuple) ->
-        snapshot = new Snapshot tuple
-        return [snapshot.timestamp(), snapshot.ioTime()]
-    return {
-        # Start with 1 to skip first entry with accumulated readings
-        data: (extract(tuple) for tuple in deviceData[1..]),
-        label: device
-    } for device, deviceData of data
+    used = []
+    cache = []
+    buffer = []
+    slab = []
+    free = []
+    for tuple in data
+        snapshot = new Snapshot(tuple)
+        used.push([snapshot.timestamp(), snapshot.usedPages()])
+        cache.push([snapshot.timestamp(), snapshot.cachePages()])
+        buffer.push([snapshot.timestamp(), snapshot.bufferPages()])
+        slab.push([snapshot.timestamp(), snapshot.slabPages()])
+        free.push([snapshot.timestamp(), snapshot.freePages()])
+    return [
+        {data: used, label: 'Used'},
+        {data: cache, label: 'Cache'},
+        {data: buffer, label: 'Buffer'},
+        {data: slab, label: 'Slab'},
+        {data: free, label: 'Free'},
+    ]
 
 
 memoryDataReady = (data) ->
-    console.log(data)
     drawFlotr(
         makeContainer('memory', 'span12'),
         memorySeries(data),
