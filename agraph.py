@@ -32,5 +32,5 @@ for line in log_file:
     ))
 
 
-f = open('html/data/data.js', 'w')
-f.write('data = ' + json.dumps(data))
+f = open('html/data/disk.js', 'w')
+f.write(json.dumps(data))

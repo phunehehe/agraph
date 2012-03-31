@@ -24,6 +24,11 @@ class Snapshot
         return this.tuple[5]
 
 
+paramByName = (name) ->
+    match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '))
+
+
 ioTimeSeries = (data) ->
     extract = (tuple) ->
         snapshot = new Snapshot tuple
@@ -118,7 +123,7 @@ makeContainer = (id, extraClass, newRow=true) ->
     return graph[0]
 
 
-$(document).ready ->
+dataReady = (data) ->
     drawFlotr(
         makeContainer('dsk', 'span12'),
         ioTimeSeries(data),
@@ -136,3 +141,6 @@ $(document).ready ->
             sectorsSeries(deviceData),
             {title: 'Sectors read/written - ' + device}
         )
+
+
+$.getJSON('data/disk.js', dataReady)
