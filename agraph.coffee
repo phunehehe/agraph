@@ -47,11 +47,13 @@ ioTimeSeries = (data) ->
     extract = (tuple) ->
         snapshot = new Snapshot(tuple)
         return [snapshot.timestamp(), snapshot.ioTime()]
-    return {
-        # Start with 1 to skip first entry with accumulated readings
-        data: (extract(tuple) for tuple in deviceData[1..]),
-        label: device
-    } for device, deviceData of data
+    result = for device, deviceData of data
+        {
+            # Start with 1 to skip first entry with accumulated readings
+            data: (extract(tuple) for tuple in deviceData[1..]),
+            label: device
+        }
+    return result
 
 
 readsWritesSeries = (data) ->
@@ -88,7 +90,7 @@ sectorsSeries = (data) ->
 
 drawFlotr = (container, series, options) ->
     defaultOptions = {
-        selection : {mode : 'x'},
+        selection : {mode: 'x'},
         xaxis: {
             noTicks: 10,
             tickFormatter: (millis) ->
@@ -183,11 +185,17 @@ memoryDataReady = (data) ->
     drawFlotr(
         makeContainer('memory', 'span12'),
         memorySeries(data),
-        {title: 'Memory usage'}
+        {
+            title: 'Memory usage',
+            lines: {
+                stacked: true,
+                fill: true,
+            },
+        }
     )
 
 
-tab = paramByName('tab')
+tab = paramByName('tab') or 'memory'
 if tab
     $('.nav li').removeClass('active')
     $("a[href*='?tab=#{tab}']").parent().addClass('active')
