@@ -1,0 +1,3 @@
+[submodule "Flotr2"]
+	path = Flotr2
+	url = git@github.com:phunehehe/Flotr2.git
