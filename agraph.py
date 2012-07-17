@@ -7,9 +7,10 @@ import json
 
 
 # TODO: Provide a way to select log file
-log_file = Popen(['atop', '-PCPU,MEM,DSK', '-r', '/var/log/atop.log.1'], stdout=PIPE).stdout
+log_file = Popen(['atop', '-Pcpu,MEM,DSK', '-r', '/var/log/atop/atop_20120717'], stdout=PIPE).stdout
 disk_data = {}
 memory_data = []
+cpu_data = {}
 
 
 def consume_disk_tokens(tokens):
@@ -44,17 +45,36 @@ def consume_memory_tokens(tokens):
     ))
 
 
+def consume_cpu_tokens(tokens):
+    _, _, timestamp, _, _, _, tps, cpu_id, sys, user, niced, idle, wait, irq, softirq, steal, guest, _, _ = tokens
+    if cpu_id not in cpu_data:
+        cpu_data[cpu_id] = []
+    cpu_data[cpu_id].append((
+        int(timestamp),
+        int(sys),
+        int(user),
+        int(niced),
+        int(idle),
+        int(wait),
+        int(irq),
+        int(softirq),
+        int(steal),
+        int(guest),
+    ))
+
+
 for line in log_file:
     line = line.strip()
     if line in ('SEP', 'RESET'):
         continue
-
     tokens = line.split(' ')
+
     label = tokens[0]
-    if label == 'DSK':
-        consume_disk_tokens(tokens)
-    elif label == 'MEM':
-        consume_memory_tokens(tokens)
+    {
+        'DSK': consume_disk_tokens,
+        'MEM': consume_memory_tokens,
+        'cpu': consume_cpu_tokens,
+    }[label](tokens)
 
 
 f = open('html/data/disk.js', 'w')
@@ -62,3 +82,6 @@ f.write(json.dumps(disk_data))
 
 f = open('html/data/memory.js', 'w')
 f.write(json.dumps(memory_data))
+
+f = open('html/data/cpu.js', 'w')
+f.write(json.dumps(cpu_data))

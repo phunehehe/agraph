@@ -37,6 +37,26 @@ class Snapshot
     sectorsWritten: ->
         return this.tuple[5]
 
+    # CPU
+    sys: ->
+        return this.tuple[1]
+    user: ->
+        return this.tuple[2]
+    niced: ->
+        return this.tuple[3]
+    idle: ->
+        return this.tuple[4]
+    wait: ->
+        return this.tuple[5]
+    irq: ->
+        return this.tuple[6]
+    softirq: ->
+        return this.tuple[7]
+    steal: ->
+        return this.tuple[8]
+    guest: ->
+        return this.tuple[9]
+
 
 paramByName = (name) ->
     match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search)
@@ -159,6 +179,63 @@ diskDataReady = (data) ->
         )
 
 
+allCPUsSeries = (data) ->
+
+    extract = (existingValue, newValue) ->
+        if not existingValue
+            return newValue
+        return [newValue[0], existingValue[1] + newValue[1]]
+
+    sys = []
+    user = []
+    niced = []
+    idle = []
+    wait = []
+    irq = []
+    softirq = []
+    steal = []
+    guest = []
+
+    for _, cpuData of data
+        for tuple, i in cpuData[1..]
+            snapshot = new Snapshot(tuple)
+            sys[i] = extract(sys[i], [snapshot.timestamp(), snapshot.sys()])
+            user[i] = extract(user[i], [snapshot.timestamp(), snapshot.user()])
+            niced[i] = extract(niced[i], [snapshot.timestamp(), snapshot.niced()])
+            idle[i] = extract(idle[i], [snapshot.timestamp(), snapshot.idle()])
+            wait[i] = extract(wait[i], [snapshot.timestamp(), snapshot.wait()])
+            irq[i] = extract(irq[i], [snapshot.timestamp(), snapshot.irq()])
+            softirq[i] = extract(softirq[i], [snapshot.timestamp(), snapshot.softirq()])
+            steal[i] = extract(steal[i], [snapshot.timestamp(), snapshot.steal()])
+            guest[i] = extract(guest[i], [snapshot.timestamp(), snapshot.guest()])
+
+    return [
+        {data: sys, label: 'Sys'},
+        {data: user, label: 'User'},
+        {data: niced, label: 'Niced'},
+        {data: idle, label: 'Idle'},
+        {data: wait, label: 'Wait'},
+        {data: irq, label: 'Irq'},
+        {data: softirq, label: 'Softirq'},
+        {data: steal, label: 'Steal'},
+        {data: guest, label: 'Guest'},
+    ]
+
+
+cpuDataReady = (data) ->
+    drawFlotr(
+        makeContainer('cpu', 'span12'),
+        allCPUsSeries(data),
+        {
+            title: 'All CPUs',
+            lines: {
+                stacked: true,
+                fill: true,
+            },
+        }
+    )
+
+
 memorySeries = (data) ->
     used = []
     cache = []
@@ -203,6 +280,7 @@ if tab
     dataReady = {
         'memory': memoryDataReady,
         'disk': diskDataReady,
+        'cpu': cpuDataReady,
     }[tab]
     $.getJSON("data/#{tab}.js", dataReady)
 
