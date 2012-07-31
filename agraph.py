@@ -7,7 +7,7 @@ import json
 
 
 # TODO: Provide a way to select log file
-log_file = Popen(['atop', '-Pcpu,MEM,DSK', '-r', '/var/log/atop/atop_20120717'], stdout=PIPE).stdout
+log_file = Popen(['atop', '-Pcpu,MEM,DSK', '-r', '/var/log/atop.log.1'], stdout=PIPE).stdout
 disk_data = {}
 memory_data = []
 cpu_data = {}
@@ -28,7 +28,11 @@ def consume_disk_tokens(tokens):
 
 
 def consume_memory_tokens(tokens):
-    _, _, timestamp, _, _, _, page_size, total_pages, free_pages, cache_pages, buffer_pages, slab_pages, dirty_pages = tokens
+    length = len(tokens)
+    if length == 13:
+        _, _, timestamp, _, _, _, page_size, total_pages, free_pages, cache_pages, buffer_pages, slab_pages, dirty_pages = tokens
+    elif length == 12:
+        _, _, timestamp, _, _, _, page_size, total_pages, free_pages, cache_pages, buffer_pages, slab_pages = tokens
     total_pages = int(total_pages)
     free_pages = int(free_pages)
     cache_pages = int(cache_pages)
@@ -46,7 +50,12 @@ def consume_memory_tokens(tokens):
 
 
 def consume_cpu_tokens(tokens):
-    _, _, timestamp, _, _, _, tps, cpu_id, sys, user, niced, idle, wait, irq, softirq, steal, guest, _, _ = tokens
+    length = len(tokens)
+    if length == 18:
+        _, _, timestamp, _, _, _, tps, cpu_id, sys, user, niced, idle, wait, irq, softirq, steal, guest, _, _ = tokens
+    elif length == 16:
+        guest = 0
+        _, _, timestamp, _, _, _, tps, cpu_id, sys, user, niced, idle, wait, irq, softirq, steal = tokens
     if cpu_id not in cpu_data:
         cpu_data[cpu_id] = []
     cpu_data[cpu_id].append((
